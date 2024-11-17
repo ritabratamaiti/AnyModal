@@ -125,6 +125,10 @@ Contributions are highly welcome! Whether it's fixing bugs, improving documentat
 3. **Submit a pull request** describing your changes.
 
 Let's build and improve AnyModal together!
+
+## Community
+
+Join our subreddit at [r/AnyModal](https://www.reddit.com/r/AnyModal) to discuss ideas, ask questions, and share your projects using AnyModal.
  
 ## License
 
