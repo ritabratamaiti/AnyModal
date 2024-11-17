@@ -1,4 +1,4 @@
-
+   
 # AnyModal: A Flexible Multimodal Language Model Framework
 
 ![AnyModal Logo](anymodal.png)
@@ -55,8 +55,8 @@ vision_tokenizer = Projector(in_features=hidden_size, out_features=768)
 
 # Load LLM components
 from transformers import AutoTokenizer, AutoModelForCausalLM
-llm_tokenizer = AutoTokenizer.from_pretrained("gpt2")
-llm_model = AutoModelForCausalLM.from_pretrained("gpt2")
+llm_tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-1B")
+llm_model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B")
 
 # Initialize AnyModal
 multimodal_model = MultiModalModel(
