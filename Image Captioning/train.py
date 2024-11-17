@@ -10,7 +10,7 @@ from tqdm import tqdm
 # Load language model and tokenizer
 llm_tokenizer, llm_model = llm.get_llm(
     "meta-llama/Llama-3.2-1B", 
-    access_token='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', 
+    access_token='GET_YOUR_OWN_TOKEN_FROM_HUGGINGFACE', 
     use_peft=False
 )
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
