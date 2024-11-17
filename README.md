@@ -103,7 +103,7 @@ class AudioProcessor:
         # Your audio preprocessing logic
         pass
 ```
-Furthormore, you can change the core components of AnyModal to suit your needs. Consider implementing the functionalities like saving and loading models or pushing the saved projectors and LoRAs to the HF hub.
+Furthermore, you can change the core components of AnyModal to suit your needs. Consider implementing the functionalities like saving and loading models or pushing the saved projectors and LoRAs to the HF hub.
 
 ## TODO List
 
