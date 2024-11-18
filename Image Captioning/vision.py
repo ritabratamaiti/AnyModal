@@ -7,6 +7,7 @@ from torchvision.transforms import ToTensor, Resize
 from torch.utils.data import Dataset, DataLoader
 import datasets
 from peft import get_peft_config, get_peft_model, LoraConfig
+import numpy as np
 
 class ImageDataset(Dataset):
     """
@@ -50,7 +51,8 @@ class ImageDataset(Dataset):
 
         # Ensure the image is in RGB format
         image = image.convert('RGB')
-        rgb_val = image
+        # get the rgb value of the image as np after resizing to 224x224
+        rgb_val = np.array(image.resize((224, 224), Image.BICUBIC))
         image = self.processor(image, return_tensors="pt")
         image = {key: val.squeeze(0) for key, val in image.items()}  # Remove batch dimension
 

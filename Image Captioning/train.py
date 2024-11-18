@@ -7,6 +7,7 @@ import schedulefree
 import numpy as np
 from tqdm import tqdm
 import os
+import matplotlib
 
 # Load language model and tokenizer
 llm_tokenizer, llm_model = llm.get_llm(
@@ -126,6 +127,8 @@ import matplotlib.pyplot as plt
 
 multimodal_model.eval()
 
+# ensure plot is wide enough to display the captions
+matplotlib.rcParams['figure.figsize'] = [10, 5] 
 for _ in range(5):
     sample_idx = np.random.randint(len(val_dataset))
     sample = val_dataset[sample_idx]
@@ -139,3 +142,18 @@ for _ in range(5):
     plt.title(f"Actual Caption: {caption}\nGenerated Caption: {generated_caption}")
     plt.axis('off')
     plt.savefig(f"image_{sample_idx}.png")
+
+
+# for _ in range(5):
+#     sample_idx = np.random.randint(len(val_dataset))
+#     sample = val_dataset[sample_idx]
+    
+#     # save the image with the caption and the generated caption
+#     image = sample['image']
+#     caption = sample['text']
+#     generated_caption = multimodal_model.generate(sample['input'], max_new_tokens=120)
+
+#     plt.imshow(image)
+#     plt.title(f"Actual Caption: {caption}\nGenerated Caption: {generated_caption}")
+#     plt.axis('off')
+#     plt.savefig(f"image_{sample_idx}.png")
