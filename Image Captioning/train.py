@@ -101,10 +101,22 @@ for epoch in range(num_epochs):
     multimodal_model.train()
 
 # Save the model
-torch.save(multimodal_model.state_dict(), 'image_captioning_model.pth')
+multimodal_model._save_model("image_captioning_model")
+
+del(multimodal_model)
+
+multimodal_model = anymodal.MultiModalModel(
+    input_processor=None,
+    input_encoder=vision_encoder,
+    input_tokenizer=vision_tokenizer,
+    language_tokenizer=llm_tokenizer,
+    language_model=llm_model,
+    input_start_token='<|imstart|>',
+    input_end_token='<|imend|>',
+    prompt_text="The description of the given New Yorker cartoon is: ")
 
 # Load the model
-multimodal_model.load_state_dict(torch.load('image_captioning_model.pth'))
+multimodal_model._load_model("image_captioning_model")
 
 # Generate captions for a few images and plot the images with the captions
 import matplotlib.pyplot as plt
