@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import os
 
 class MultiModalModel(nn.Module):
     """
@@ -202,7 +203,7 @@ class MultiModalModel(nn.Module):
         token_ids = torch.tensor(self.language_tokenizer(token)['input_ids'], device=self.device)
         return self._embed_tokens(token_ids).unsqueeze(0)
 
-    def _save_model(self, **kwargs):
+    def _save_model(self, output_dir, **kwargs):
         """
         Saves the model to disk.
         Implement this method for the functionality to save the model.
@@ -214,15 +215,30 @@ class MultiModalModel(nn.Module):
         Parameters:
         - kwargs: Additional arguments for saving.
         """
-        raise NotImplementedError
+        torch.save(self.input_tokenizer, f'{output_dir}/input_tokenizer.pt')
+
+        if hasattr(self.input_encoder, "save_pretrained"):  
+            self.input_encoder.save_pretrained(output_dir + "/input_encoder")
+
+        if hasattr(self.language_model, "save_pretrained"):
+            self.language_model.save_pretrained(output_dir + "/language_model")
+
+
     
-    def _load_model(self, **kwargs):
+    def _load_model(self, model_dir, **kwargs):
         """
-        Loads the model from disk. Complemetary to _save_model.
+        Loads the model from disk. Complementary to _save_model.
         Implement this method for the functionality to load the model.
         Remember to add the necessary parameters to the function signature as needed.
 
         Parameters:
         - kwargs: Additional arguments for loading.
         """
-        raise NotImplementedError
+        
+        self.input_tokenizer = torch.load(f'{model_dir}/input_tokenizer.pt')
+
+        if os.path.exists(model_dir + "/input_encoder"):
+            self.input_encoder = self.input_encoder.from_pretrained(model_dir + "/input_encoder")
+
+        if os.path.exists(model_dir + "/language_model"):
+            self.language_model = self.language_model.from_pretrained(model_dir + "/language_model")

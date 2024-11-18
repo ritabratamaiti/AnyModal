@@ -11,7 +11,7 @@ from tqdm import tqdm
 llm_tokenizer, llm_model = llm.get_llm(
     "meta-llama/Llama-3.2-1B", 
     access_token='GET_YOUR_OWN_TOKEN_FROM_HUGGINGFACE', 
-    use_peft=False
+    use_peft=True,
 )
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
@@ -99,3 +99,28 @@ for epoch in range(num_epochs):
             print("Generated Text: ", multimodal_model.generate(sample['input'], max_new_tokens=120))
 
     multimodal_model.train()
+
+# Save the model
+torch.save(multimodal_model.state_dict(), 'image_captioning_model.pth')
+
+# Load the model
+multimodal_model.load_state_dict(torch.load('image_captioning_model.pth'))
+
+# Generate captions for a few images and plot the images with the captions
+import matplotlib.pyplot as plt
+
+multimodal_model.eval()
+
+for _ in range(5):
+    sample_idx = np.random.randint(len(val_dataset))
+    sample = val_dataset[sample_idx]
+    
+    # save the image with the caption and the generated caption
+    image = sample['image']
+    caption = sample['text']
+    generated_caption = multimodal_model.generate(sample['input'], max_new_tokens=120)
+
+    plt.imshow(image)
+    plt.title(f"Actual Caption: {caption}\nGenerated Caption: {generated_caption}")
+    plt.axis('off')
+    plt.savefig(f"image_{sample_idx}.png")
