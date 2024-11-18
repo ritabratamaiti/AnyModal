@@ -218,7 +218,7 @@ class MultiModalModel(nn.Module):
     
     def _load_model(self, **kwargs):
         """
-        Loads the model from disk. Complemetary to _save_model.
+        Loads the model from disk. Complementary to _save_model.
         Implement this method for the functionality to load the model.
         Remember to add the necessary parameters to the function signature as needed.
 
