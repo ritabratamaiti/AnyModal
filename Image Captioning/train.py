@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 import schedulefree
 import numpy as np
 from tqdm import tqdm
+import os
 
 # Load language model and tokenizer
 llm_tokenizer, llm_model = llm.get_llm(
@@ -100,6 +101,8 @@ for epoch in range(num_epochs):
 
     multimodal_model.train()
 
+os.makedirs("image_captioning_model", exist_ok=True)
+
 # Save the model
 multimodal_model._save_model("image_captioning_model")
 
@@ -108,7 +111,7 @@ del(multimodal_model)
 multimodal_model = anymodal.MultiModalModel(
     input_processor=None,
     input_encoder=vision_encoder,
-    input_tokenizer=vision_tokenizer,
+    input_tokenizer=vision.Projector(vision_hidden_size, llm_hidden_size, num_hidden=1),
     language_tokenizer=llm_tokenizer,
     language_model=llm_model,
     input_start_token='<|imstart|>',

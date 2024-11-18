@@ -50,12 +50,14 @@ class ImageDataset(Dataset):
 
         # Ensure the image is in RGB format
         image = image.convert('RGB')
+        rgb_val = image
         image = self.processor(image, return_tensors="pt")
         image = {key: val.squeeze(0) for key, val in image.items()}  # Remove batch dimension
 
         return {
             'input': image,
-            'text': item['image_description']
+            'text': item['image_description'],
+            'image': rgb_val
         }
 
 class Projector(nn.Module):
