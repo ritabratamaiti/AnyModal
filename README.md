@@ -1,5 +1,4 @@
-   
-# AnyModal: A Flexible Multimodal Language Model Framework
+# AnyModal: A Flexible Multimodal Language Model Framework for PyTorch
 
 ![AnyModal Logo](anymodal.png)
 
