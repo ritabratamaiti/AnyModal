@@ -51,7 +51,7 @@ multimodal_model = anymodal.MultiModalModel(
 if not os.path.exists("image_captioning_model"):
     os.makedirs("image_captioning_model")
 
-hf_hub_download("AnyModal/VLM_Cartoon_Caption", filename="input_tokenizer.pt")
+hf_hub_download("AnyModal/VLM_Cartoon_Caption", filename="input_tokenizer.pt", local_dir="image_captioning_model")
 
 # Load the model
 multimodal_model._load_model("image_captioning_model")
