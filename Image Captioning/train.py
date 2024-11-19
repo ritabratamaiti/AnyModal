@@ -13,7 +13,7 @@ import matplotlib
 llm_tokenizer, llm_model = llm.get_llm(
     "meta-llama/Llama-3.2-1B", 
     access_token='GET_YOUR_OWN_TOKEN_FROM_HUGGINGFACE', 
-    use_peft=True,
+    use_peft=False,
 )
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
@@ -21,7 +21,7 @@ llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 dataset_name = "jmhessel/newyorker_caption_contest"
 
 # Load vision model components
-image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=True)
+image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('wanglab/medsam-vit-base', use_peft=False)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder("flaviagiammarino/pubmed-clip-vit-base-patch32", use_peft=False)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('emre570/google-vit-large-finetuned', use_peft=True)
@@ -60,7 +60,7 @@ multimodal_model = anymodal.MultiModalModel(
     prompt_text="The description of the given New Yorker cartoon is: ")
 
 # Training configuration
-num_epochs = 7
+num_epochs = 10
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 multimodal_model = multimodal_model.to(device)
 multimodal_model.train()
@@ -122,13 +122,11 @@ multimodal_model = anymodal.MultiModalModel(
 # Load the model
 multimodal_model._load_model("image_captioning_model")
 
-# Generate captions for a few images and plot the images with the captions
+# Generate captions for a few images and plot the images and save captions in txt file
 import matplotlib.pyplot as plt
 
 multimodal_model.eval()
 
-# ensure plot is wide enough to display the captions
-matplotlib.rcParams['figure.figsize'] = [10, 5] 
 for _ in range(5):
     sample_idx = np.random.randint(len(val_dataset))
     sample = val_dataset[sample_idx]
@@ -139,21 +137,9 @@ for _ in range(5):
     generated_caption = multimodal_model.generate(sample['input'], max_new_tokens=120)
 
     plt.imshow(image)
-    plt.title(f"Actual Caption: {caption}\nGenerated Caption: {generated_caption}")
     plt.axis('off')
     plt.savefig(f"image_{sample_idx}.png")
 
-
-# for _ in range(5):
-#     sample_idx = np.random.randint(len(val_dataset))
-#     sample = val_dataset[sample_idx]
-    
-#     # save the image with the caption and the generated caption
-#     image = sample['image']
-#     caption = sample['text']
-#     generated_caption = multimodal_model.generate(sample['input'], max_new_tokens=120)
-
-#     plt.imshow(image)
-#     plt.title(f"Actual Caption: {caption}\nGenerated Caption: {generated_caption}")
-#     plt.axis('off')
-#     plt.savefig(f"image_{sample_idx}.png")
+    with open(f"image_{sample_idx}_caption.txt", "w") as f:
+        f.write(f"Actual Caption: {caption}\n")
+        f.write(f"Generated Caption: {generated_caption}\n")
