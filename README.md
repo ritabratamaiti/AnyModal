@@ -104,6 +104,20 @@ class AudioProcessor:
 ```
 Furthermore, you can change the core components of AnyModal to suit your needs. Consider implementing/modifying functionalities like saving and loading models or pushing the saved projectors and LoRAs to the HF hub.
 
+## Model Zoo
+
+The AnyModal Model Zoo showcases pre-trained multi-modal models for various tasks, accessible on our [Hugging Face organization page](https://huggingface.co/AnyModal). Below is a list of currently available models:
+
+### 1. VLM_Cartoon_Caption
+
+- **Model Description**: A projector network for vision-language multimodal models (consisting of a ViT and a Llama 3.2-1B model) trained for image captioning on cartoon datasets.
+- **Pre-trained Weights**: Available [here](https://huggingface.co/AnyModal/VLM_Cartoon_Caption).
+- **Training Demo**: Trained using the [Image Captioning demo project](https://github.com/ritabratamaiti/AnyModal/tree/main/Image%20Captioning).
+- **Training Script**: [train.py](https://github.com/ritabratamaiti/AnyModal/blob/main/Image%20Captioning/train.py).
+- **Inference Script**: To use the model for inference, refer to [inference.py](https://github.com/ritabratamaiti/AnyModal/blob/main/Image%20Captioning/inference.py).
+
+Stay tuned as we add more models to the zoo, covering diverse use cases.
+
 ## TODO List
 
 - [x] **AnyModal demo for LaTeX OCR**  
@@ -127,12 +141,12 @@ Let's build and improve AnyModal together!
 
 ## Community
 
-Join our subreddit at [r/AnyModal](https://www.reddit.com/r/AnyModal) to discuss ideas, ask questions, and share your projects using AnyModal.
- 
+Join our subreddit at [r/AnyModal](https://www.reddit.com/r/AnyModal) to discuss ideas, ask questions, and share your projects using AnyModal. You can also visit our [Hugging Face organization page](https://huggingface.co/AnyModal) for more resources, models, and examples.
+
 ## License
 
 This project is licensed under the MIT License. Feel free to use and modify as needed.
 
 ---
 
-Happy building with AnyModal!
+Happy building with AnyModal! 🚀
