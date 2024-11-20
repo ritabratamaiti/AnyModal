@@ -108,11 +108,11 @@ Furthermore, you can change the core components of AnyModal to suit your needs. 
 
 The AnyModal Model Zoo showcases pre-trained multi-modal models for various tasks, accessible on our [Hugging Face organization page](https://huggingface.co/AnyModal). Below is a list of currently available models:
 
-### 1. VLM_Cartoon_Caption
+### 1. VLM (Cartoon Captioning)
 
 - **Model Description**: A projector network for vision-language multimodal models (consisting of a ViT and a Llama 3.2-1B model) trained for image captioning on cartoon datasets.
 - **Pre-trained Weights**: Available [here](https://huggingface.co/AnyModal/VLM_Cartoon_Caption).
-- **Training Demo**: Trained using the [Image Captioning demo project](https://github.com/ritabratamaiti/AnyModal/tree/main/Image%20Captioning).
+- **Project Directory**: Trained using the [Image Captioning demo project](https://github.com/ritabratamaiti/AnyModal/tree/main/Image%20Captioning).
 - **Training Script**: [train.py](https://github.com/ritabratamaiti/AnyModal/blob/main/Image%20Captioning/train.py).
 - **Inference Script**: To use the model for inference, refer to [inference.py](https://github.com/ritabratamaiti/AnyModal/blob/main/Image%20Captioning/inference.py).
 
