@@ -154,10 +154,10 @@ def get_image_encoder(model_name, use_peft=False):
     - model: Pre-trained vision model.
     - hidden_size: int, size of the model's hidden layer.
     """
-    # processor = ViTImageProcessor.from_pretrained(model_name)
-    # model = ViTForImageClassification.from_pretrained(model_name)
-    processor = AutoImageProcessor.from_pretrained(model_name)
-    model = OwlViTVisionModel.from_pretrained(model_name)
+    processor = ViTImageProcessor.from_pretrained(model_name)
+    model = ViTForImageClassification.from_pretrained(model_name)
+    # processor = AutoImageProcessor.from_pretrained(model_name)
+    # model = OwlViTVisionModel.from_pretrained(model_name)
     hidden_size = model.config.hidden_size
     
     if use_peft:

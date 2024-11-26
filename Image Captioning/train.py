@@ -22,9 +22,9 @@ dataset_name = "jmhessel/newyorker_caption_contest"
 
 # Load vision model components
 
-image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/owlvit-base-patch32', use_peft=False)
+# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/owlvit-base-patch32', use_peft=False)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('facebook/dinov2-base', use_peft=False)
-# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
+image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=True)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('wanglab/medsam-vit-base', use_peft=False)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder("flaviagiammarino/pubmed-clip-vit-base-patch32", use_peft=False)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('emre570/google-vit-large-finetuned', use_peft=True)
@@ -39,9 +39,10 @@ print(f"Train size: {train_size}, Validation size: {val_size}")
 # DataLoader configuration
 batch_size = 4
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-# get a small subset from training set
-train_loader = DataLoader(torch.utils.data.Subset(train_dataset, range(train_size//10)), batch_size=batch_size, shuffle=True)
+# train_loader = DataLoader(torch.utils.data.Subset(train_dataset, range(train_size//10)), batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+# val_loader = DataLoader(torch.utils.data.Subset(val_dataset, range(val_size//10)), batch_size=batch_size, shuffle=True)
+
 
 # Initialize vision tokenizer and encoder
 vision_encoder = vision.VisionEncoder(vision_model)
