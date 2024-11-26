@@ -1,4 +1,4 @@
-from transformers import ViTImageProcessor, ViTForImageClassification
+from transformers import ViTImageProcessor, ViTForImageClassification, AutoImageProcessor, Dinov2Model, OwlViTVisionModel
 from PIL import Image
 import requests
 import torch
@@ -102,6 +102,7 @@ class Projector(nn.Module):
         for layer in self.layers:
             x = self.dropout(x)
             x = layer(x)
+        x = self.dropout(x)
         x = self.out_layer(x)
         return x
 
@@ -137,7 +138,8 @@ class VisionEncoder(nn.Module):
         """
         inputs = {key: val.to(self.device) for key, val in inputs.items()}
         outputs = self.model(**inputs, output_hidden_states=True)
-        return outputs.hidden_states[-1]  # Extract last hidden state
+        # return outputs.hidden_states[-1]  # Extract last hidden state
+        return outputs.last_hidden_state
 
 def get_image_encoder(model_name, use_peft=False):
     """
@@ -152,8 +154,10 @@ def get_image_encoder(model_name, use_peft=False):
     - model: Pre-trained vision model.
     - hidden_size: int, size of the model's hidden layer.
     """
-    processor = ViTImageProcessor.from_pretrained(model_name)
-    model = ViTForImageClassification.from_pretrained(model_name)
+    # processor = ViTImageProcessor.from_pretrained(model_name)
+    # model = ViTForImageClassification.from_pretrained(model_name)
+    processor = AutoImageProcessor.from_pretrained(model_name)
+    model = OwlViTVisionModel.from_pretrained(model_name)
     hidden_size = model.config.hidden_size
     
     if use_peft:

@@ -21,27 +21,26 @@ llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 dataset_name = "jmhessel/newyorker_caption_contest"
 
 # Load vision model components
-image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
+
+image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/owlvit-base-patch32', use_peft=False)
+# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('facebook/dinov2-base', use_peft=False)
+# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('wanglab/medsam-vit-base', use_peft=False)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder("flaviagiammarino/pubmed-clip-vit-base-patch32", use_peft=False)
 # image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('emre570/google-vit-large-finetuned', use_peft=True)
 
-dataset = vision.ImageDataset(dataset_name, image_processor, name = 'explanation')
+train_dataset = vision.ImageDataset(dataset_name, image_processor, name = 'explanation')
+val_dataset = vision.ImageDataset(dataset_name, image_processor, name = 'explanation', split = 'validation')
 
-# Split dataset into training and validation sets
-split_ratio = 0.95
-train_size = int(split_ratio * len(dataset))
-val_size = len(dataset) - train_size
+train_size = len(train_dataset)
+val_size = len(val_dataset)
 print(f"Train size: {train_size}, Validation size: {val_size}")
-
-train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
-
-# get a small subset of the dataset for testing
-# val_dataset = torch.utils.data.Subset(val_dataset, range(len(train_dataset)//10))
 
 # DataLoader configuration
 batch_size = 4
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+# get a small subset from training set
+train_loader = DataLoader(torch.utils.data.Subset(train_dataset, range(train_size//10)), batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 # Initialize vision tokenizer and encoder
