@@ -17,8 +17,8 @@ class MultiModalModel(nn.Module):
                  input_tokenizer,
                  language_tokenizer,
                  language_model,
-                 input_start_token='<|imstart|>',
-                 input_end_token='<|imend|>',
+                 input_start_token=None,
+                 input_end_token=None,
                  prompt_text="This input contains: "):
         """
         Initializes the MultiModalModel.
@@ -69,8 +69,21 @@ class MultiModalModel(nn.Module):
         """
         Adds custom tokens to the tokenizer and resizes the language model's embeddings.
         """
-        self.language_tokenizer.add_tokens([self.input_start_token, self.input_end_token], special_tokens=True)
-        self.language_model.resize_token_embeddings(len(self.language_tokenizer))
+        # self.language_tokenizer.add_tokens([self.input_start_token, self.input_end_token], special_tokens=True)
+        # self.language_model.resize_token_embeddings(len(self.language_tokenizer))
+        num_tokens_new = 0
+        if self.input_start_token is not None:
+            self.language_tokenizer.add_tokens([self.input_start_token], special_tokens=True)
+            num_tokens_new += 1
+        else:
+            self.input_start_token = '<|imgstart|>'
+        if self.input_end_token is not None:
+            self.language_tokenizer.add_tokens([self.input_end_token], special_tokens=True)
+            num_tokens_new += 1
+        else:
+            self.input_end_token = '<|imgend|>'
+        if num_tokens_new > 0:
+            self.language_model.resize_token_embeddings(len(self.language_tokenizer))
 
     def forward(self, batch):
         """

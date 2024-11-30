@@ -20,7 +20,7 @@ llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 dataset_name = "Mozilla/flickr30k-transformed-captions"
 
 # Load vision model components
-image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
+image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=True)
 
 
 dataset = vision.ImageDataset(dataset_name, image_processor, split = 'test')
@@ -32,16 +32,18 @@ val_size = len(dataset) - train_size
 train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
 
 
-train_size = len(train_dataset)
-val_size = len(val_dataset)
-print(f"Train size: {train_size}, Validation size: {val_size}")
+
 
 # DataLoader configuration
 batch_size = 4
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-# train_loader = DataLoader(torch.utils.data.Subset(train_dataset, range(train_size//10)), batch_size=batch_size, shuffle=True)
+train_loader = DataLoader(torch.utils.data.Subset(train_dataset, range(train_size//20)), batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-# val_loader = DataLoader(torch.utils.data.Subset(val_dataset, range(val_size//10)), batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(torch.utils.data.Subset(val_dataset, range(val_size//20)), batch_size=batch_size, shuffle=True)
+
+train_size = len(train_loader)
+val_size = len(val_loader)
+print(f"Train size: {train_size}, Validation size: {val_size}")
 
 
 # Initialize vision tokenizer and encoder
@@ -55,8 +57,6 @@ multimodal_model = anymodal.MultiModalModel(
     input_tokenizer=vision_tokenizer,
     language_tokenizer=llm_tokenizer,
     language_model=llm_model,
-    input_start_token='<|imstart|>',
-    input_end_token='<|imend|>',
     prompt_text="The description of the given image is: ")
 
 multimodal_model.language_model = llm.add_peft(multimodal_model.language_model)
@@ -101,7 +101,7 @@ for epoch in range(num_epochs):
             sample = val_dataset[sample_idx]
             print("Actual Text: ", sample['text'])
             print("Generated Text: ", multimodal_model.generate(sample['input'], max_new_tokens=120))
-
+            
     multimodal_model.train()
 
 os.makedirs("image_captioning_model", exist_ok=True)
@@ -117,8 +117,6 @@ multimodal_model = anymodal.MultiModalModel(
     input_tokenizer=vision.Projector(vision_hidden_size, llm_hidden_size, num_hidden=1),
     language_tokenizer=llm_tokenizer,
     language_model=llm_model,
-    input_start_token='<|imstart|>',
-    input_end_token='<|imend|>',
     prompt_text="The description of the given image is: ")
 
 # Load the model

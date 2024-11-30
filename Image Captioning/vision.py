@@ -139,8 +139,8 @@ class VisionEncoder(nn.Module):
         """
         inputs = {key: val.to(self.device) for key, val in inputs.items()}
         outputs = self.model(**inputs, output_hidden_states=True)
-        # return outputs.hidden_states[-1]  # Extract last hidden state
-        return outputs.last_hidden_state
+        return outputs.hidden_states[-1]  # Extract last hidden state
+        # return outputs.last_hidden_state
 
 def get_image_encoder(model_name, use_peft=False):
     """
@@ -177,7 +177,7 @@ def get_image_encoder(model_name, use_peft=False):
     return processor, model, hidden_size
 
 if __name__ == '__main__':
-    dataset_name = "Mozilla/coco-gpt4o"
+    dataset_name = "Mozilla/flickr30k-transformed-captions"
     processor, model, hidden_size = get_image_encoder('google/vit-base-patch16-224')
 
     dataset = ImageDataset(dataset_name, processor)

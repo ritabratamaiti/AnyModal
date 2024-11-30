@@ -20,13 +20,12 @@ def add_peft(model):
         bias="none",
         task_type="CAUSAL_LM",
         target_modules=["q_proj", "v_proj"],
-        modules_to_save=["embed_tokens"]
+        # modules_to_save=["embed_tokens"]
     )
 
     # Apply PEFT to the model
     model = get_peft_model(model, peft_config)
     model.print_trainable_parameters()
-
     return model
 
 def get_llm(model_name, access_token=None):
@@ -45,6 +44,8 @@ def get_llm(model_name, access_token=None):
     # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=access_token)
     model = AutoModelForCausalLM.from_pretrained(model_name, token=access_token)
+    for param in model.parameters():
+            param.requires_grad = False
 
     return tokenizer, model
 
