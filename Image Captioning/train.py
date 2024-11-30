@@ -17,14 +17,20 @@ llm_tokenizer, llm_model = llm.get_llm(
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
 # Dataset configuration
-dataset_name = "Mozilla/coco-gpt4o"
+dataset_name = "Mozilla/flickr30k-transformed-captions"
 
 # Load vision model components
 image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
 
 
-train_dataset = vision.ImageDataset(dataset_name, image_processor, split = 'train')
-val_dataset = vision.ImageDataset(dataset_name, image_processor, split = 'validation')
+dataset = vision.ImageDataset(dataset_name, image_processor, split = 'test')
+
+# Split dataset
+split_ratio = 0.8
+train_size = int(split_ratio * len(dataset))
+val_size = len(dataset) - train_size
+train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
+
 
 train_size = len(train_dataset)
 val_size = len(val_dataset)

@@ -8,6 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 import datasets
 from peft import get_peft_config, get_peft_model, LoraConfig
 import numpy as np
+import random
 
 class ImageDataset(Dataset):
     """
@@ -18,7 +19,7 @@ class ImageDataset(Dataset):
     - processor: Preprocessing function for images.
     """
 
-    def __init__(self, dataset_name, processor, name, split='train'):
+    def __init__(self, dataset_name, processor, name = None, split='train'):
         """
         Initializes the dataset by loading a Hugging Face dataset and configuring an image processor.
         
@@ -58,7 +59,7 @@ class ImageDataset(Dataset):
 
         return {
             'input': image,
-            'text': item['image_description'],
+            'text': random.choice(item['alt_text']),
             'image': rgb_val
         }
 
