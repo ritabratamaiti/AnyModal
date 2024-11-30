@@ -8,11 +8,11 @@ import numpy as np
 from tqdm import tqdm
 import os
 import matplotlib.pyplot as plt
+
 # Load language model and tokenizer
 llm_tokenizer, llm_model = llm.get_llm(
     "meta-llama/Llama-3.2-1B", 
-    access_token='GET_YOUR_OWN_TOKEN_FROM_HUGGINGFACE', 
-    use_peft=False,
+    access_token='GET_YOUR_OWN_TOKEN_FROM_HUGGINGFACE'
 )
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
@@ -52,6 +52,8 @@ multimodal_model = anymodal.MultiModalModel(
     input_start_token='<|imstart|>',
     input_end_token='<|imend|>',
     prompt_text="The description of the given image is: ")
+
+multimodal_model.language_model = llm.add_peft(multimodal_model.language_model)
 
 # Training configuration
 num_epochs = 10
