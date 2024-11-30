@@ -7,8 +7,7 @@ import schedulefree
 import numpy as np
 from tqdm import tqdm
 import os
-import matplotlib
-
+import matplotlib.pyplot as plt
 # Load language model and tokenizer
 llm_tokenizer, llm_model = llm.get_llm(
     "meta-llama/Llama-3.2-1B", 
@@ -18,19 +17,14 @@ llm_tokenizer, llm_model = llm.get_llm(
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
 # Dataset configuration
-dataset_name = "jmhessel/newyorker_caption_contest"
+dataset_name = "Mozilla/coco-gpt4o"
 
 # Load vision model components
+image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
 
-# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/owlvit-base-patch32', use_peft=False)
-# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('facebook/dinov2-base', use_peft=False)
-image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=True)
-# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('wanglab/medsam-vit-base', use_peft=False)
-# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder("flaviagiammarino/pubmed-clip-vit-base-patch32", use_peft=False)
-# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('emre570/google-vit-large-finetuned', use_peft=True)
 
-train_dataset = vision.ImageDataset(dataset_name, image_processor, name = 'explanation')
-val_dataset = vision.ImageDataset(dataset_name, image_processor, name = 'explanation', split = 'validation')
+train_dataset = vision.ImageDataset(dataset_name, image_processor, split = 'train')
+val_dataset = vision.ImageDataset(dataset_name, image_processor, split = 'validation')
 
 train_size = len(train_dataset)
 val_size = len(val_dataset)
@@ -57,7 +51,7 @@ multimodal_model = anymodal.MultiModalModel(
     language_model=llm_model,
     input_start_token='<|imstart|>',
     input_end_token='<|imend|>',
-    prompt_text="The description of the given New Yorker cartoon is: ")
+    prompt_text="The description of the given image is: ")
 
 # Training configuration
 num_epochs = 10
@@ -117,13 +111,13 @@ multimodal_model = anymodal.MultiModalModel(
     language_model=llm_model,
     input_start_token='<|imstart|>',
     input_end_token='<|imend|>',
-    prompt_text="The description of the given New Yorker cartoon is: ")
+    prompt_text="The description of the given image is: ")
 
 # Load the model
 multimodal_model._load_model("image_captioning_model")
 
 # Generate captions for a few images and plot the images and save captions in txt file
-import matplotlib.pyplot as plt
+
 
 multimodal_model.eval()
 

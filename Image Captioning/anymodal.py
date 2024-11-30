@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import os
+from peft import AutoPeftModelForCausalLM
 
 class MultiModalModel(nn.Module):
     """
@@ -216,6 +217,7 @@ class MultiModalModel(nn.Module):
         - kwargs: Additional arguments for saving.
         """
         torch.save(self.input_tokenizer, f'{output_dir}/input_tokenizer.pt')
+        self.language_model.save_pretrained(f'{output_dir}/language_model')
 
 
     
@@ -229,3 +231,5 @@ class MultiModalModel(nn.Module):
         - kwargs: Additional arguments for loading.
         """
         self.input_tokenizer = torch.load(f'{model_dir}/input_tokenizer.pt')
+        self.language_model = AutoPeftModelForCausalLM.from_pretrained(f'{model_dir}/language_model')
+        

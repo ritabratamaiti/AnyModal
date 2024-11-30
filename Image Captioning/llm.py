@@ -1,8 +1,35 @@
 from huggingface_hub import login
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from peft import LoraConfig
+from peft import LoraConfig, get_peft_model
 
-def get_llm(model_name, access_token=None, use_peft=False):
+def add_peft(model):
+    """
+    Adds PEFT to a model.
+
+    Parameters:
+    - model: Pre-trained language model.
+
+    Returns:
+    - Pre-trained language model with PEFT applied.
+    """
+    # Define PEFT configuration
+    peft_config = LoraConfig(
+        lora_alpha=32,
+        lora_dropout=0.1,
+        r=16,
+        bias="none",
+        task_type="CAUSAL_LM",
+        target_modules=["q_proj", "v_proj"],
+        modules_to_save=["embed_tokens"]
+    )
+
+    # Apply PEFT to the model
+    model = get_peft_model(model, peft_config)
+    model.print_trainable_parameters()
+
+    return model
+
+def get_llm(model_name, access_token=None):
     """
     Retrieves a language model from the Hugging Face Hub and optionally applies PEFT for LoRA-based fine-tuning.
 
@@ -18,29 +45,6 @@ def get_llm(model_name, access_token=None, use_peft=False):
     # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=access_token)
     model = AutoModelForCausalLM.from_pretrained(model_name, token=access_token)
-
-    # Apply PEFT if specified
-    if use_peft:
-        peft_config = LoraConfig(
-            lora_alpha=16,
-            lora_dropout=0.1,
-            r=64,
-            bias="none",
-            task_type="CAUSAL_LM"
-        )
-
-        initial_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-        print(f"Trainable Parameters before PEFT: {initial_trainable_params}")
-
-        model.add_adapter(peft_config)
-
-        updated_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-        percent_trainable = (updated_trainable_params / initial_trainable_params) * 100
-        print(f"Trainable Parameters after PEFT: {updated_trainable_params} ({percent_trainable:.2f}%)")
-    else:
-        # Freeze all parameters for inference mode
-        for param in model.parameters():
-            param.requires_grad = False
 
     return tokenizer, model
 

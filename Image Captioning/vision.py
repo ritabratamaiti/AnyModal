@@ -1,4 +1,4 @@
-from transformers import ViTImageProcessor, ViTForImageClassification, AutoImageProcessor, Dinov2Model, OwlViTVisionModel
+from transformers import ViTImageProcessor, ViTForImageClassification
 from PIL import Image
 import requests
 import torch
@@ -156,17 +156,13 @@ def get_image_encoder(model_name, use_peft=False):
     """
     processor = ViTImageProcessor.from_pretrained(model_name)
     model = ViTForImageClassification.from_pretrained(model_name)
-    # processor = AutoImageProcessor.from_pretrained(model_name)
-    # model = OwlViTVisionModel.from_pretrained(model_name)
     hidden_size = model.config.hidden_size
     
     if use_peft:
-        
-        
         peft_config = LoraConfig(
             task_type=None, 
             inference_mode=False, 
-            r=8, 
+            r=16, 
             lora_alpha=32, 
             lora_dropout=0.1, 
             target_modules=['dense']
@@ -180,7 +176,7 @@ def get_image_encoder(model_name, use_peft=False):
     return processor, model, hidden_size
 
 if __name__ == '__main__':
-    dataset_name = "AnaniyaX/indiana_uni_chest_x_ray"
+    dataset_name = "Mozilla/coco-gpt4o"
     processor, model, hidden_size = get_image_encoder('google/vit-base-patch16-224')
 
     dataset = ImageDataset(dataset_name, processor)
