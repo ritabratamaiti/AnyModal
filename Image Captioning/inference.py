@@ -12,6 +12,7 @@ from PIL import Image
 import requests
 from io import BytesIO
 from huggingface_hub import hf_hub_download, snapshot_download
+import matplotlib.pyplot as plt
 
 # Load language model and tokenizer
 llm_tokenizer, llm_model = llm.get_llm(
@@ -50,9 +51,11 @@ snapshot_download("AnyModal/Image-Captioning-Llama-3.2-1B", local_dir="image_cap
 multimodal_model._load_model("image_captioning_model")
 
 # Generate captions for a few images and plot the images and save captions in txt file
-import matplotlib.pyplot as plt
+
 
 multimodal_model.eval()
+
+os.makedirs("temp", exist_ok=True)
 
 for _ in range(5):
     sample_idx = np.random.randint(len(ds))
@@ -94,7 +97,7 @@ for idx, cartoon in enumerate(imgs):
     img = img.convert('RGB')
 
     # save the image
-    img.save(f"daily_cartoon_{idx}.png")
+    img.save(f"web_image_{idx}.png")
 
     # process the image
     image = image_processor(img, return_tensors="pt")
