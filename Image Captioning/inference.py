@@ -22,7 +22,7 @@ llm_tokenizer, llm_model = llm.get_llm(
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
 # Dataset configuration
-dataset_name = "Mozilla/flickr30k-transformed-captions"
+dataset_name = "AnyModal/flickr30k"
 
 # Load vision model components
 image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
@@ -45,7 +45,7 @@ multimodal_model = anymodal.MultiModalModel(
 if not os.path.exists("image_captioning_model"):
     os.makedirs("image_captioning_model")
 
-snapshot_download("AnyModal/Image-Captioning-Llama-3.2-1B", local_dir="image_captioning_model")
+# snapshot_download("AnyModal/Image-Captioning-Llama-3.2-1B", local_dir="image_captioning_model")
 
 # Load the model
 multimodal_model._load_model("image_captioning_model")
@@ -79,12 +79,12 @@ for _ in range(5):
 
 imgs = [
     {
-        'url': 'https://cdn.britannica.com/10/250610-050-BC5CCDAF/Zebra-finch-Taeniopygia-guttata-bird.jpg',
-        'meta': 'Bird'
+        'url': 'https://img.freepik.com/free-photo/people-posing-together-registration-day_23-2149096794.jpg',
+        'meta': 'People'
     },
     {
-        'url': 'https://i.redd.it/vwlli9s6bmj91.jpg',
-        'meta': 'Plane (passengers)'
+        'url': 'https://discoverymood.com/wp-content/uploads/2019/01/iStock-629076332.jpg',
+        'meta': 'Dog'
     }
 ]
 
