@@ -16,10 +16,11 @@ def add_peft(model):
     peft_config = LoraConfig(
         lora_alpha=32,
         lora_dropout=0.1,
-        r=16,
+        r=8,
         bias="none",
         task_type="CAUSAL_LM",
-        target_modules=["q_proj", "v_proj"],
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", 
+                    "gate_proj", "up_proj", "down_proj"],
         # modules_to_save=["embed_tokens"]
     )
 
