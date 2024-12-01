@@ -8,30 +8,27 @@ import numpy as np
 from tqdm import tqdm
 import os
 import matplotlib.pyplot as plt
+from torch.amp import GradScaler
 
 # Load language model and tokenizer
 llm_tokenizer, llm_model = llm.get_llm(
     "meta-llama/Llama-3.2-1B", 
-    access_token='GET_YOUR_OWN_TOKEN_FROM_HUGGINGFACE'
+    access_token='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'
 )
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
 # Dataset configuration
-dataset_name = "Mozilla/flickr30k-transformed-captions"
+dataset_name = "AnyModal/flickr30k"
 
 # Load vision model components
 image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
 
 
-dataset = vision.ImageDataset(dataset_name, image_processor, split = 'test')
+train_dataset = vision.ImageDataset(dataset_name, image_processor, split = 'train')
+val_dataset = vision.ImageDataset(dataset_name, image_processor, split = 'validation')
 
-# Split dataset
-split_ratio = 0.8
-train_size = int(split_ratio * len(dataset))
-val_size = len(dataset) - train_size
-train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
-
-
+train_size = len(train_dataset)
+val_size = len(val_dataset)
 
 
 # DataLoader configuration
@@ -72,14 +69,18 @@ multimodal_model.train()
 optimizer = schedulefree.AdamWScheduleFree(multimodal_model.parameters(), lr=3e-4)
 optimizer.train()
 
+scaler = GradScaler()
+
 # Training loop
 for epoch in range(num_epochs):
     training_losses = []
     for batch_idx, batch in tqdm(enumerate(train_loader), desc=f"Epoch {epoch+1} Training", leave=False):
         optimizer.zero_grad()
-        logits, loss = multimodal_model(batch)
-        loss.backward()
-        optimizer.step()
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
+            logits, loss = multimodal_model(batch)
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
         training_losses.append(loss.item())
     
     avg_train_loss = sum(training_losses) / len(training_losses)
@@ -109,23 +110,6 @@ os.makedirs("image_captioning_model", exist_ok=True)
 
 # Save the model
 multimodal_model._save_model("image_captioning_model")
-
-del(multimodal_model)
-
-multimodal_model = anymodal.MultiModalModel(
-    input_processor=None,
-    input_encoder=vision_encoder,
-    input_tokenizer=vision.Projector(vision_hidden_size, llm_hidden_size, num_hidden=1),
-    language_tokenizer=llm_tokenizer,
-    language_model=llm_model,
-    lm_peft = llm.add_peft,
-    prompt_text="The description of the given image is: ")
-
-# Load the model
-multimodal_model._load_model("image_captioning_model")
-
-# Generate captions for a few images and plot the images and save captions in txt file
-
 
 multimodal_model.eval()
 
