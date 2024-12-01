@@ -76,12 +76,12 @@ class MultiModalModel(nn.Module):
             self.language_tokenizer.add_tokens([self.input_start_token], special_tokens=True)
             num_tokens_new += 1
         else:
-            self.input_start_token = '<|imgstart|>'
+            self.input_start_token = 'Image:'
         if self.input_end_token is not None:
             self.language_tokenizer.add_tokens([self.input_end_token], special_tokens=True)
             num_tokens_new += 1
         else:
-            self.input_end_token = '<|imgend|>'
+            self.input_end_token = '.'
         if num_tokens_new > 0:
             self.language_model.resize_token_embeddings(len(self.language_tokenizer))
 

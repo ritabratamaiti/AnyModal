@@ -20,7 +20,7 @@ llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 dataset_name = "Mozilla/flickr30k-transformed-captions"
 
 # Load vision model components
-image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=True)
+image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
 
 
 dataset = vision.ImageDataset(dataset_name, image_processor, split = 'test')
@@ -37,9 +37,9 @@ train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size,
 # DataLoader configuration
 batch_size = 4
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-train_loader = DataLoader(torch.utils.data.Subset(train_dataset, range(train_size//20)), batch_size=batch_size, shuffle=True)
+train_loader = DataLoader(torch.utils.data.Subset(train_dataset, range(train_size//5)), batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-val_loader = DataLoader(torch.utils.data.Subset(val_dataset, range(val_size//20)), batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(torch.utils.data.Subset(val_dataset, range(val_size//5)), batch_size=batch_size, shuffle=True)
 
 train_size = len(train_loader)
 val_size = len(val_loader)
@@ -59,10 +59,10 @@ multimodal_model = anymodal.MultiModalModel(
     language_model=llm_model,
     prompt_text="The description of the given image is: ")
 
-multimodal_model.language_model = llm.add_peft(multimodal_model.language_model)
+# multimodal_model.language_model = llm.add_peft(multimodal_model.language_model)
 
 # Training configuration
-num_epochs = 10
+num_epochs = 2
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 multimodal_model = multimodal_model.to(device)
 multimodal_model.train()
