@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import os
-from peft import AutoPeftModelForCausalLM
+from peft import L
 
 class MultiModalModel(nn.Module):
     """
@@ -19,7 +19,6 @@ class MultiModalModel(nn.Module):
                  language_model,
                  input_start_token=None,
                  input_end_token=None,
-                 lm_peft = None,
                  prompt_text="This input contains: "):
         """
         Initializes the MultiModalModel.
@@ -32,7 +31,6 @@ class MultiModalModel(nn.Module):
         - language_model: nn.Module, pre-trained language model for text generation.
         - input_start_token: str, special token marking the start of input.
         - input_end_token: str, special token marking the end of input.
-        - lm_peft: a function that applies PEFT to the language model.
         - prompt_text: str, text prompt used as a context for generation.
         """
         super().__init__()
@@ -52,7 +50,7 @@ class MultiModalModel(nn.Module):
         self.prompt_text = prompt_text
 
         # Add special tokens to tokenizer and update embeddings
-        self._add_special_tokens(lm_peft)
+        self._add_special_tokens()
 
         # Loss function
         self.loss_function = nn.CrossEntropyLoss(ignore_index=-100) # ignore index is -100 by default, but we set it explicitly here for clarity!
@@ -67,7 +65,7 @@ class MultiModalModel(nn.Module):
         self.prompt_embedding = self._embed_tokens(self.language_tokenizer.encode(self.prompt_text, return_tensors="pt")).squeeze(0)
         self.prompt_length = self.prompt_embedding.size(0)
 
-    def _add_special_tokens(self, lm_peft):
+    def _add_special_tokens(self):
         """
         Adds custom tokens to the tokenizer and resizes the language model's embeddings.
         """
@@ -86,9 +84,6 @@ class MultiModalModel(nn.Module):
             self.input_end_token = '.'
         if num_tokens_new > 0:
             self.language_model.resize_token_embeddings(len(self.language_tokenizer))
-
-        if lm_peft is not None:
-            self.language_model = lm_peft(self.language_model)
 
     def forward(self, batch):
         """
@@ -249,5 +244,6 @@ class MultiModalModel(nn.Module):
         - kwargs: Additional arguments for loading.
         """
         self.input_tokenizer = torch.load(f'{model_dir}/input_tokenizer.pt')
-        self.language_model = AutoPeftModelForCausalLM.from_pretrained(f'{model_dir}/language_model')
+        self.language_model.load_adapter(f'{model_dir}/language_model')
+        
         
