@@ -46,8 +46,6 @@ def get_llm(model_name, access_token=None):
     model = AutoModelForCausalLM.from_pretrained(model_name, token=access_token)
     # for param in model.parameters():
     #         param.requires_grad = False
-    model = add_peft(model)
-
     return tokenizer, model
 
 def get_hidden_size(tokenizer, model):

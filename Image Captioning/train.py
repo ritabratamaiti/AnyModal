@@ -57,6 +57,7 @@ multimodal_model = anymodal.MultiModalModel(
     input_tokenizer=vision_tokenizer,
     language_tokenizer=llm_tokenizer,
     language_model=llm_model,
+    lm_peft = llm.add_peft,
     prompt_text="The description of the given image is: ")
 
 # multimodal_model.language_model = llm.add_peft(multimodal_model.language_model)
@@ -117,6 +118,7 @@ multimodal_model = anymodal.MultiModalModel(
     input_tokenizer=vision.Projector(vision_hidden_size, llm_hidden_size, num_hidden=1),
     language_tokenizer=llm_tokenizer,
     language_model=llm_model,
+    lm_peft = llm.add_peft,
     prompt_text="The description of the given image is: ")
 
 # Load the model
