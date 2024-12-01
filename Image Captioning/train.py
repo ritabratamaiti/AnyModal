@@ -13,7 +13,7 @@ from torch.amp import GradScaler
 # Load language model and tokenizer
 llm_tokenizer, llm_model = llm.get_llm(
     "meta-llama/Llama-3.2-1B", 
-    access_token='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'
+    access_token='GET_YOUR_OWN_TOKEN_FROM_HUGGINGFACE'
 )
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
