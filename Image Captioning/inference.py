@@ -105,7 +105,7 @@ for idx, cartoon in enumerate(imgs):
     generated_caption = multimodal_model.generate(image, max_new_tokens=120)
 
     # save the caption
-    with open(f"daily_cartoon_{idx}_caption.txt", "w") as f:
+    with open(f"web_image_{idx}_caption.txt", "w") as f:
         f.write(f"Meta: {cartoon['meta']}\n")
         f.write(f"Generated Caption: {generated_caption}\n")
 
