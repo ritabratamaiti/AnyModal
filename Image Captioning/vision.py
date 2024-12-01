@@ -59,7 +59,7 @@ class ImageDataset(Dataset):
 
         return {
             'input': image,
-            'text': random.choice(item['alt_text']),
+            'text': random.choice(item['original_alt_text']),
             'image': rgb_val
         }
 
