@@ -32,11 +32,11 @@ val_size = len(val_dataset)
 
 
 # DataLoader configuration
-batch_size = 4
+batch_size = 6
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-train_loader = DataLoader(torch.utils.data.Subset(train_dataset, range(train_size//5)), batch_size=batch_size, shuffle=True)
+# train_loader = DataLoader(torch.utils.data.Subset(train_dataset, range(train_size//5)), batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-val_loader = DataLoader(torch.utils.data.Subset(val_dataset, range(val_size//5)), batch_size=batch_size, shuffle=True)
+# val_loader = DataLoader(torch.utils.data.Subset(val_dataset, range(val_size//5)), batch_size=batch_size, shuffle=True)
 
 train_size = len(train_loader)
 val_size = len(val_loader)
@@ -60,7 +60,7 @@ multimodal_model = anymodal.MultiModalModel(
 # multimodal_model.language_model = llm.add_peft(multimodal_model.language_model)
 
 # Training configuration
-num_epochs = 2
+num_epochs = 4
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 multimodal_model = multimodal_model.to(device)
 multimodal_model.train()
@@ -70,6 +70,8 @@ optimizer = schedulefree.AdamWScheduleFree(multimodal_model.parameters(), lr=3e-
 optimizer.train()
 
 scaler = GradScaler()
+
+os.makedirs("image_captioning_model", exist_ok=True)
 
 # Training loop
 for epoch in range(num_epochs):
@@ -105,11 +107,11 @@ for epoch in range(num_epochs):
             print("Generated Text: ", multimodal_model.generate(sample['input'], max_new_tokens=120))
             
     multimodal_model.train()
+    # Save the model
+    multimodal_model._save_model("image_captioning_model")
 
-os.makedirs("image_captioning_model", exist_ok=True)
 
-# Save the model
-multimodal_model._save_model("image_captioning_model")
+
 
 multimodal_model.eval()
 
