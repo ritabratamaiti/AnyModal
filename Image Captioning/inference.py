@@ -64,7 +64,7 @@ for _ in range(5):
     # save the image with the caption and the generated caption
     image = sample['image']
     caption = sample['text']
-    generated_caption = multimodal_model.generate(sample['input'], max_new_tokens=120, temperature = 0.2)
+    generated_caption = multimodal_model.generate(sample['input'], max_new_tokens=120)
 
     plt.imshow(image)
     plt.axis('off')
