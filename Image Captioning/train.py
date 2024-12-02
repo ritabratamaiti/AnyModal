@@ -60,7 +60,7 @@ multimodal_model = anymodal.MultiModalModel(
 # multimodal_model.language_model = llm.add_peft(multimodal_model.language_model)
 
 # Training configuration
-num_epochs = 4
+num_epochs = 3
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 multimodal_model = multimodal_model.to(device)
 multimodal_model.train()
