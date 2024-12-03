@@ -7,6 +7,7 @@ import schedulefree
 import numpy as np
 from tqdm import tqdm
 import os
+from torch.amp import GradScaler
 
 # Load language model and tokenizer
 llm_tokenizer, llm_model = llm.get_llm(
@@ -17,27 +18,32 @@ llm_tokenizer, llm_model = llm.get_llm(
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
 # Dataset configuration
-dataset_name = "linxy/LaTeX_OCR"
+dataset_name = "unsloth/LaTeX_OCR"
 
 # Load vision model components
-image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
-# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('wanglab/medsam-vit-base', use_peft=False)
-# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder("flaviagiammarino/pubmed-clip-vit-base-patch32", use_peft=False)
-# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('emre570/google-vit-large-finetuned', use_peft=True)
-
+# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
+image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/siglip-so400m-patch14-384', use_peft=False)
 
 # Load dataset
-train_dataset = vision.ImageDataset(dataset_name, image_processor, name = 'human_handwrite', split = 'train')
-val_dataset = vision.ImageDataset(dataset_name, image_processor, name = 'human_handwrite', split = 'validation')
-train_size = len(train_dataset)
-val_size = len(val_dataset)
+train_dataset = vision.ImageDataset(dataset_name, image_processor, name = None, split = 'train')
+val_dataset = vision.ImageDataset(dataset_name, image_processor, name = None, split = 'test')
 
-print(f"Train size: {train_size} | Validation size: {val_size}")
+# get subset of the dataset
+subset_ratio = 0.1
+
+train_dataset = torch.utils.data.Subset(train_dataset, range(int(subset_ratio * len(train_dataset))))
+val_dataset = torch.utils.data.Subset(val_dataset, range(int(subset_ratio * len(val_dataset))))
+
 
 # DataLoader configuration
-batch_size = 5
+batch_size = 6
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+
+train_size = len(train_loader)
+val_size = len(val_loader)
+
+print(f"Train size: {train_size} | Validation size: {val_size}")
 
 # Initialize vision tokenizer and encoder
 vision_encoder = vision.VisionEncoder(vision_model)
@@ -50,10 +56,10 @@ multimodal_model = anymodal.MultiModalModel(
     input_tokenizer=vision_tokenizer,
     language_tokenizer=llm_tokenizer,
     language_model=llm_model,
-    prompt_text="The latex expression of the equation in the image is: ")
+    prompt_text="The latex expression of the equation in the image is:")
 
 # Training configuration
-num_epochs = 7
+num_epochs = 3
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 multimodal_model = multimodal_model.to(device)
 multimodal_model.train()
@@ -62,16 +68,20 @@ multimodal_model.train()
 optimizer = schedulefree.AdamWScheduleFree(multimodal_model.parameters(), lr=3e-4)
 optimizer.train()
 
-os.makedirs("latex_ocr", exist_ok=True)
+# Scaler
+scaler = GradScaler()
 
 # Training loop
 for epoch in range(num_epochs):
     training_losses = []
     for batch_idx, batch in tqdm(enumerate(train_loader), desc=f"Epoch {epoch+1} Training", leave=False):
         optimizer.zero_grad()
-        logits, loss = multimodal_model(batch)
-        loss.backward()
-        optimizer.step()
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
+            logits, loss = multimodal_model(batch)
+        
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
         training_losses.append(loss.item())
     
     avg_train_loss = sum(training_losses) / len(training_losses)
@@ -82,7 +92,8 @@ for epoch in range(num_epochs):
     validation_losses = []
     with torch.no_grad():
         for batch_idx, batch in tqdm(enumerate(val_loader), desc=f"Epoch {epoch+1} Validation", leave=False):
-            logits, loss = multimodal_model(batch)
+            with torch.autocast(device_type='cuda', dtype=torch.float16):
+                logits, loss = multimodal_model(batch)
             validation_losses.append(loss.item())
         
         avg_val_loss = sum(validation_losses) / len(validation_losses)
@@ -96,19 +107,21 @@ for epoch in range(num_epochs):
             print("Generated LaTeX: ", multimodal_model.generate(sample['input'], max_new_tokens=120))
             
     multimodal_model.train()
-    multimodal_model._save_model('latex_ocr')
+    os.makedirs(f"latex_ocr_{epoch+1}", exist_ok=True)
+    multimodal_model._save_model(f"latex_ocr_{epoch+1}")
 
 
 # evaluate on test set
-test_dataset = vision.ImageDataset(dataset_name, image_processor, name = 'human_handwrite_print', split = 'test')
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+# test_dataset = vision.ImageDataset(dataset_name, image_processor, name = None, split = 'test')
+test_loader = DataLoader(val_loader, batch_size=batch_size, shuffle=False)
 
 multimodal_model.eval()
 test_losses = []
 
 with torch.no_grad():
     for batch_idx, batch in tqdm(enumerate(test_loader), desc=f"Test", leave=False):
-        logits, loss = multimodal_model(batch)
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
+            logits, loss = multimodal_model(batch)
         test_losses.append(loss.item())
     
     avg_test_loss = sum(test_losses) / len(test_losses)
@@ -116,7 +129,7 @@ with torch.no_grad():
 
     # Decode a random test sample
     for _ in range(5):
-        sample_idx = np.random.randint(len(test_dataset))
-        sample = test_dataset[sample_idx]
+        sample_idx = np.random.randint(len(val_dataset))
+        sample = val_dataset[sample_idx]
         print("Actual LaTeX: ", sample['text'])
         print("Generated LaTeX: ", multimodal_model.generate(sample['input'], max_new_tokens=120))

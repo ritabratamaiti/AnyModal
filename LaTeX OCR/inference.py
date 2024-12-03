@@ -22,12 +22,13 @@ llm_tokenizer, llm_model = llm.get_llm(
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
 # Dataset configuration
-dataset_name = "linxy/LaTeX_OCR"
+dataset_name = "unsloth/LaTeX_OCR"
 
 # Load vision model components
-image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
+# image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/vit-base-patch16-224', use_peft=False)
+image_processor, vision_model, vision_hidden_size = vision.get_image_encoder('google/siglip-so400m-patch14-384', use_peft=False)
 
-ds = vision.TestDataset(dataset_name, image_processor, name = 'human_handwrite', split = 'test')
+ds = vision.TestDataset(dataset_name, image_processor, name = None, split = 'test')
 
 
 # Initialize vision tokenizer and encoder
@@ -42,12 +43,12 @@ multimodal_model = anymodal.MultiModalModel(
     input_tokenizer=vision_tokenizer,
     language_tokenizer=llm_tokenizer,
     language_model=llm_model,
-    prompt_text="The latex expression of the equation in the image is: ")
+    prompt_text="The latex expression of the equation in the image is:")
 
 if not os.path.exists("latex_ocr"):
     os.makedirs("latex_ocr")
 
-# snapshot_download("AnyModal/latex-ocr-Llama-3.2-1B", local_dir="latex_ocr")
+snapshot_download("AnyModal/latex-ocr-Llama-3.2-1B", local_dir="latex_ocr")
 
 multimodal_model._load_model('latex_ocr')
 
@@ -63,7 +64,7 @@ for _ in range(5):
     # save the image with the caption and the generated caption
     image = sample['image']
     caption = sample['text']
-    generated_caption = multimodal_model.generate(sample['input'], max_new_tokens=120)
+    generated_caption = multimodal_model.generate(sample['input'], max_new_tokens=120, do_sample = True, num_beams = 3)
 
     plt.imshow(image)
     plt.axis('off')

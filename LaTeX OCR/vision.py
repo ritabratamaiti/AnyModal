@@ -1,4 +1,5 @@
 from transformers import ViTImageProcessor, ViTForImageClassification
+from transformers import AutoProcessor, SiglipVisionModel
 from PIL import Image
 import requests
 import torch
@@ -52,7 +53,7 @@ class ImageDataset(Dataset):
         # Ensure the image is in RGB format
         image = image.convert('RGB')
         # rgb_val = np.array(image.resize((224, 224), Image.BICUBIC))
-        image = self.processor(image, return_tensors="pt")
+        image = self.processor(images = image, return_tensors="pt")
         image = {key: val.squeeze(0) for key, val in image.items()}  # Remove batch dimension
 
         return {
@@ -187,7 +188,8 @@ class VisionEncoder(nn.Module):
         """
         inputs = {key: val.to(self.device) for key, val in inputs.items()}
         outputs = self.model(**inputs, output_hidden_states=True)
-        return outputs.hidden_states[-1]  # Extract last hidden state
+        # return outputs.hidden_states[-1]  # Extract last hidden state
+        return outputs.pooler_output.unsqueeze(1)
 
 def get_image_encoder(model_name, use_peft=False):
     """
@@ -202,8 +204,11 @@ def get_image_encoder(model_name, use_peft=False):
     - model: Pre-trained vision model.
     - hidden_size: int, size of the model's hidden layer.
     """
-    processor = ViTImageProcessor.from_pretrained(model_name)
-    model = ViTForImageClassification.from_pretrained(model_name)
+    # processor = ViTImageProcessor.from_pretrained(model_name)
+    # model = ViTForImageClassification.from_pretrained(model_name)
+    model = SiglipVisionModel.from_pretrained(model_name)
+    processor = AutoProcessor.from_pretrained(model_name)
+
     hidden_size = model.config.hidden_size
     
     if use_peft:
@@ -227,7 +232,7 @@ def get_image_encoder(model_name, use_peft=False):
 
 if __name__ == '__main__':
     dataset_name = "AnaniyaX/indiana_uni_chest_x_ray"
-    processor, model, hidden_size = get_image_encoder('google/vit-base-patch16-224')
+    processor, model, hidden_size = get_image_encoder('google/siglip-so400m-patch14-384', use_peft=False)
 
     dataset = ImageDataset(dataset_name, processor)
 
