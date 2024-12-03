@@ -7,6 +7,7 @@ from torchvision.transforms import ToTensor, Resize
 from torch.utils.data import Dataset, DataLoader
 import datasets
 from peft import get_peft_config, get_peft_model, LoraConfig
+import numpy as np
 
 class ImageDataset(Dataset):
     """
@@ -50,12 +51,65 @@ class ImageDataset(Dataset):
 
         # Ensure the image is in RGB format
         image = image.convert('RGB')
+        # rgb_val = np.array(image.resize((224, 224), Image.BICUBIC))
         image = self.processor(image, return_tensors="pt")
         image = {key: val.squeeze(0) for key, val in image.items()}  # Remove batch dimension
 
         return {
             'input': image,
-            'text': item['text']
+            'text': item['text'],
+        }
+
+class TestDataset(Dataset):
+    """
+    TestDataset: A custom test dataset to load images and corresponding text labels from a Hugging Face dataset.
+
+    Attributes:
+    - dataset: Hugging Face dataset split.
+    - processor: Preprocessing function for images.
+    """
+
+    def __init__(self, dataset_name, processor, split='train', name='human_handwrite_print'):
+        """
+        Initializes the dataset by loading a Hugging Face dataset and configuring an image processor.
+        
+        Parameters:
+        - dataset_name: str, name of the Hugging Face dataset.
+        - processor: Callable, processes image data into a format suitable for the model.
+        - split: str, specifies the dataset split (default: 'train').
+        """
+        self.dataset = datasets.load_dataset(dataset_name, name)[split]
+        self.processor = processor
+
+    def __len__(self):
+        return len(self.dataset)
+    
+    def __getitem__(self, idx):
+        """
+        Retrieves a single data item, including the processed image and corresponding text label.
+
+        Parameters:
+        - idx: int, index of the item to retrieve.
+
+        Returns:
+        - dict: Contains processed image and its text label.
+        """
+        item = self.dataset[idx]
+        image = item['image']
+
+        if not isinstance(image, Image.Image):
+            image = Image.open(image.tobytesio())
+
+        # Ensure the image is in RGB format
+        image = image.convert('RGB')
+        rgb_val = np.array(image)
+        image = self.processor(image, return_tensors="pt")
+        image = {key: val.squeeze(0) for key, val in image.items()}  # Remove batch dimension
+
+        return {
+            'input': image,
+            'text': item['text'],
+            'image': rgb_val
         }
 
 class Projector(nn.Module):
