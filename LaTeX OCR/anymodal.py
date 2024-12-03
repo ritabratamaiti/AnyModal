@@ -234,8 +234,6 @@ class MultiModalModel(nn.Module):
         - kwargs: Additional arguments for saving.
         """
         torch.save(self.input_tokenizer, f'{output_dir}/input_tokenizer.pt')
-        self.language_model.save_pretrained(f'{output_dir}/language_model')
-
 
     
     def _load_model(self, model_dir, **kwargs):
@@ -248,5 +246,4 @@ class MultiModalModel(nn.Module):
         - kwargs: Additional arguments for loading.
         """
         self.input_tokenizer = torch.load(f'{model_dir}/input_tokenizer.pt')
-        self.language_model.load_adapter(f'{model_dir}/language_model')
         
