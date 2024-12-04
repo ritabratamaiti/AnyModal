@@ -43,7 +43,7 @@ class MultiModalModel(nn.Module):
         self.input_encoder = input_encoder.to(self.device)
         self.input_tokenizer = input_tokenizer.to(self.device)
         self.language_tokenizer = language_tokenizer
-        self.language_model = language_model.to(self.device)
+        self.language_model = language_model
 
         # Special tokens and prompt
         self.input_start_token = input_start_token
@@ -234,6 +234,7 @@ class MultiModalModel(nn.Module):
         - kwargs: Additional arguments for saving.
         """
         torch.save(self.input_tokenizer, f'{output_dir}/input_tokenizer.pt')
+        self.language_model.save_pretrained(f'{output_dir}/language_model')
 
     
     def _load_model(self, model_dir, **kwargs):
@@ -246,4 +247,5 @@ class MultiModalModel(nn.Module):
         - kwargs: Additional arguments for loading.
         """
         self.input_tokenizer = torch.load(f'{model_dir}/input_tokenizer.pt')
+        self.language_model.load_adapter(f'{model_dir}/language_model')
         

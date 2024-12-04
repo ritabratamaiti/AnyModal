@@ -1,8 +1,11 @@
 from huggingface_hub import login
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import LoraConfig
+import torch
+from transformers import BitsAndBytesConfig
 
-def get_llm(model_name, access_token=None, use_peft=False):
+
+def get_llm(model_name, quantized = True, access_token=None, use_peft=False):
     """
     Retrieves a language model from the Hugging Face Hub and optionally applies PEFT for LoRA-based fine-tuning.
 
@@ -17,7 +20,11 @@ def get_llm(model_name, access_token=None, use_peft=False):
     """
     # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=access_token)
-    model = AutoModelForCausalLM.from_pretrained(model_name, token=access_token)
+    if quantized:
+        bnb_quantization_config = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16, bnb_4bit_use_double_quant=True, bnb_4bit_quant_type="nf4")
+        model = AutoModelForCausalLM.from_pretrained(model_name, token=access_token, quantization_config = bnb_quantization_config)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_name, token=access_token)
 
     # Apply PEFT if specified
     if use_peft:

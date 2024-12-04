@@ -13,7 +13,7 @@ from torch.amp import GradScaler
 llm_tokenizer, llm_model = llm.get_llm(
     "meta-llama/Llama-3.2-1B", 
     access_token='GET_YOUR_OWN_TOKEN_FROM_HUGGINGFACE',   
-    use_peft=False
+    use_peft=True
 )
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
 
@@ -29,14 +29,14 @@ train_dataset = vision.ImageDataset(dataset_name, image_processor, name = None, 
 val_dataset = vision.ImageDataset(dataset_name, image_processor, name = None, split = 'test')
 
 # get subset of the dataset
-subset_ratio = 0.1
+subset_ratio = 0.2
 
 train_dataset = torch.utils.data.Subset(train_dataset, range(int(subset_ratio * len(train_dataset))))
 val_dataset = torch.utils.data.Subset(val_dataset, range(int(subset_ratio * len(val_dataset))))
 
 
 # DataLoader configuration
-batch_size = 6
+batch_size = 4
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
@@ -104,7 +104,8 @@ for epoch in range(num_epochs):
             sample_idx = np.random.randint(len(val_dataset))
             sample = val_dataset[sample_idx]
             print("Actual LaTeX: ", sample['text'])
-            print("Generated LaTeX: ", multimodal_model.generate(sample['input'], max_new_tokens=120))
+            with torch.autocast(device_type='cuda', dtype=torch.float16):
+                print("Generated LaTeX: ", multimodal_model.generate(sample['input'], max_new_tokens=120))
             
     multimodal_model.train()
     os.makedirs(f"latex_ocr_{epoch+1}", exist_ok=True)
@@ -113,13 +114,13 @@ for epoch in range(num_epochs):
 
 # evaluate on test set
 # test_dataset = vision.ImageDataset(dataset_name, image_processor, name = None, split = 'test')
-test_loader = DataLoader(val_loader, batch_size=batch_size, shuffle=False)
+# test_loader = DataLoader(val_loader, batch_size=batch_size, shuffle=False)
 
 multimodal_model.eval()
 test_losses = []
 
 with torch.no_grad():
-    for batch_idx, batch in tqdm(enumerate(test_loader), desc=f"Test", leave=False):
+    for batch_idx, batch in tqdm(enumerate(val_loader), desc=f"Test", leave=False):
         with torch.autocast(device_type='cuda', dtype=torch.float16):
             logits, loss = multimodal_model(batch)
         test_losses.append(loss.item())
@@ -132,4 +133,5 @@ with torch.no_grad():
         sample_idx = np.random.randint(len(val_dataset))
         sample = val_dataset[sample_idx]
         print("Actual LaTeX: ", sample['text'])
-        print("Generated LaTeX: ", multimodal_model.generate(sample['input'], max_new_tokens=120))
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
+            print("Generated LaTeX: ", multimodal_model.generate(sample['input'], max_new_tokens=120))

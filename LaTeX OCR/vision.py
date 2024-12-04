@@ -104,7 +104,7 @@ class TestDataset(Dataset):
         # Ensure the image is in RGB format
         image = image.convert('RGB')
         rgb_val = np.array(image)
-        image = self.processor(image, return_tensors="pt")
+        image = self.processor(images = image, return_tensors="pt")
         image = {key: val.squeeze(0) for key, val in image.items()}  # Remove batch dimension
 
         return {
@@ -188,8 +188,8 @@ class VisionEncoder(nn.Module):
         """
         inputs = {key: val.to(self.device) for key, val in inputs.items()}
         outputs = self.model(**inputs, output_hidden_states=True)
-        # return outputs.hidden_states[-1]  # Extract last hidden state
-        return outputs.pooler_output.unsqueeze(1)
+        return outputs.hidden_states[-2]  # Extract last hidden state
+        # return outputs.pooler_output.unsqueeze(1)
 
 def get_image_encoder(model_name, use_peft=False):
     """

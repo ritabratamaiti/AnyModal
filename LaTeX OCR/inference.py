@@ -18,8 +18,15 @@ import matplotlib.pyplot as plt
 llm_tokenizer, llm_model = llm.get_llm(
     "meta-llama/Llama-3.2-1B", 
     access_token='GET_YOUR_OWN_TOKEN_FROM_HUGGINGFACE',
+    quantized = False,
+    use_peft = False
 )
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 llm_hidden_size = llm.get_hidden_size(llm_tokenizer, llm_model)
+
+llm_model.to(device)
 
 # Dataset configuration
 dataset_name = "unsloth/LaTeX_OCR"
@@ -76,5 +83,39 @@ for _ in range(5):
 
 
 
+
+imgs = [
+    {
+        'url': 'https://datasets-server.huggingface.co/cached-assets/linxy/LaTeX_OCR/--/89aa6e447dd7afb4dec927af549df766539b6f9c/--/human_handwrite_print/train/0/image/image.jpg?Expires=1733310855&Signature=ILkAdXeXZ2K2ouUu8PjTfVi7BKSTQax1hNT04EYi2PrJmuewAM-JxAkC5VuPINekFCkbWqNf0V48FeVRylXuhHT1SQwfF7OXk~MwZ50hefzgr5E9HYqocIs5KgVNi8lAw6WgcQ~2MYKe9Rufy2lIFzchr0BfWqnbL1tmJXOlMjSKL78mb7vihoffoLyXcPpAQy2p0EjmZUvUlKR71wuQFtlT4lw5UOdPzk0oUNFvXt~E~42RC~5lhJMtmsYBm5KznMNTwoEiauHXnWu~QO14Z0ypgCOt1~mCDyILyKZCVhVcl6LHtstrk70-Id8djnEgQueQEvXbL~7zvoDgXEU2rw__&Key-Pair-Id=K3EI6M078Z3AC3',
+        'meta': 'z _ { 1 } = r _ { 1 } ( \cos \theta _ { 1 } + i \sin \theta _ { 1 } )'
+    },
+    {
+        'url': 'https://datasets-server.huggingface.co/cached-assets/linxy/LaTeX_OCR/--/89aa6e447dd7afb4dec927af549df766539b6f9c/--/human_handwrite_print/train/6/image/image.jpg?Expires=1733300239&Signature=wDz9TVpqHYeVq8tiM~xziv8k2-QxC5qIF1Ph4pJZpQV4xJfbMzA4Polzy7jMFXwkfJCET48cWTXLj9OE6t7fk2k-J9XIszVOBPfBCRn87WNCN3yEe0EhMIwLjMvg4JqFHel4LwkMLA6aMvg5pi9wgeZliZcA3smwGZecwZt5JLKNmo63v90nc695RRJPe1Tkko8IZuFp9WFR4oGQegdIlbno6I-iX-ZNXvdKrafq0-9KeQE~E2nOTwptJ5JEbZuI9E1a5bXEMufvw2v-87mLirEPptW2Zs1TOUojixQwSfnpCa6MgNuT3~92gs~s~ItTR2sc6UHm46HLAW5Ws7WcbQ__&Key-Pair-Id=K3EI6M078Z3AC3',
+        'meta': '\frac { \tan \alpha - \tan \beta } { 1 + \tan \alpha \tan \beta }'
+    }
+]
+
+
+# Generate captions for the daily cartoons
+for idx, cartoon in enumerate(imgs):
+    # download the image
+    response = requests.get(cartoon['url'])
+    img = Image.open(BytesIO(response.content))
+    img = img.convert('RGB')
+
+    # save the image
+    img.save(f"web_image_{idx}.png")
+
+    # process the image
+    image = image_processor(images = img, return_tensors="pt")
+    image = {key: val.squeeze(0) for key, val in image.items()}  # Remove batch dimension
+
+    # generate the caption
+    generated_caption = multimodal_model.generate(image, max_new_tokens=120)
+
+    # save the caption
+    with open(f"web_image_{idx}_caption.txt", "w") as f:
+        f.write(f"Meta: {cartoon['meta']}\n")
+        f.write(f"Generated Caption: {generated_caption}\n")
 
 
