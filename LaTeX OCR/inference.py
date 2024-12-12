@@ -97,9 +97,9 @@ imgs = [
 
 
 # Generate captions for the daily cartoons
-for idx, cartoon in enumerate(imgs):
+for idx, img in enumerate(imgs):
     # download the image
-    response = requests.get(cartoon['url'])
+    response = requests.get(img['url'])
     img = Image.open(BytesIO(response.content))
     img = img.convert('RGB')
 
@@ -115,7 +115,7 @@ for idx, cartoon in enumerate(imgs):
 
     # save the caption
     with open(f"web_image_{idx}_caption.txt", "w") as f:
-        f.write(f"Meta: {cartoon['meta']}\n")
+        f.write(f"Meta: {img['meta']}\n")
         f.write(f"Generated Caption: {generated_caption}\n")
 
 
