@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anymodal"
+version = "0.2.0"
+description = "A flexible framework for building multimodal language models in PyTorch"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Ritabrata Maiti"},
+]
+keywords = ["multimodal", "llm", "vision-language", "pytorch", "transformers"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "torch>=2.1.0",
+    "transformers>=4.36.0",
+    "datasets>=2.14.0",
+    "pillow>=10.0.0",
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+peft = ["peft>=0.7.0"]
+quantization = ["bitsandbytes>=0.41.0"]
+training = ["schedulefree>=1.0.0"]
+metrics = ["rouge-score>=0.1.2", "nltk>=3.8.0"]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1.0",
+]
+all = ["anymodal[peft,quantization,training,metrics,dev]"]
+
+[project.urls]
+Homepage = "https://github.com/ritabratamaiti/AnyModal"
+Repository = "https://github.com/ritabratamaiti/AnyModal"
+Issues = "https://github.com/ritabratamaiti/AnyModal/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
