@@ -156,5 +156,6 @@ def load_vision_encoder(
                 "PEFT is required for use_peft=True. Install with: pip install peft"
             )
 
-    encoder = VisionEncoder(model, hidden_layer_index=hidden_layer_index, freeze=freeze and not use_peft)
+    should_freeze = freeze and not use_peft
+    encoder = VisionEncoder(model, hidden_layer_index=hidden_layer_index, freeze=should_freeze)
     return processor, encoder

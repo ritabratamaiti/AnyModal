@@ -26,6 +26,7 @@ from anymodal.config import (
     ProjectorConfig,
     TrainingConfig,
 )
+from anymodal.data import MultiModalDataset, multimodal_collate_fn
 from anymodal.encoders import BaseEncoder, VisionEncoder, load_vision_encoder
 from anymodal.model import MultiModalModel
 from anymodal.projectors import (
@@ -64,6 +65,9 @@ __all__ = [
     "CAbstractorProjector",
     "ProjectorType",
     "create_projector",
+    # Data
+    "MultiModalDataset",
+    "multimodal_collate_fn",
     # Utilities
     "build_model",
     "build_hf_trainer",

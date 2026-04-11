@@ -1,0 +1,45 @@
+# Image Captioning with AnyModal
+# Dataset: Flickr30k | Vision: ViT-base | LLM: Llama 3.2-1B
+
+encoder:
+  model_name: "google/vit-base-patch16-224"
+  hidden_layer_index: -1
+  freeze: true
+
+projector:
+  type: "mlp"
+  kwargs:
+    num_layers: 2
+
+language_model:
+  model_name: "meta-llama/Llama-3.2-1B"
+  use_peft: false
+  torch_dtype: "auto"
+
+input_start_token: "<|input_start|>"
+input_end_token: "<|input_end|>"
+prompt_text: "The description of the given image is: "
+
+data:
+  dataset_name: "AnyModal/flickr30k"
+  image_field: "image"
+  text_field: "original_alt_text"
+  train_split: "train"
+  eval_split: "validation"
+
+training:
+  output_dir: "./output/image_captioning"
+  num_epochs: 3
+  per_device_train_batch_size: 6
+  per_device_eval_batch_size: 6
+  learning_rate: 3.0e-4
+  warmup_ratio: 0.05
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 1.0
+  fp16: true
+  logging_steps: 10
+  eval_strategy: "epoch"
+  save_strategy: "epoch"
+  save_total_limit: 2
+  seed: 42
+  report_to: "none"

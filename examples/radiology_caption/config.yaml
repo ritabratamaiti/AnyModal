@@ -1,0 +1,52 @@
+# Radiology Caption with AnyModal
+# Dataset: ROCO-radiology | Vision: ViT-base + LoRA | LLM: Llama 3.2-1B
+
+encoder:
+  model_name: "google/vit-base-patch16-224"
+  hidden_layer_index: -1
+  freeze: false
+  use_peft: true
+  peft_kwargs:
+    r: 8
+    lora_alpha: 32
+    target_modules: ["query", "value"]
+    lora_dropout: 0.1
+
+projector:
+  type: "mlp"
+  kwargs:
+    num_layers: 2
+
+language_model:
+  model_name: "meta-llama/Llama-3.2-1B"
+  use_peft: false
+  torch_dtype: "auto"
+
+input_start_token: "<|imstart|>"
+input_end_token: "<|imend|>"
+prompt_text: "The caption for the given radiology image is: "
+
+data:
+  dataset_name: "eltorio/ROCO-radiology"
+  image_field: "image"
+  text_field: "caption"
+  train_split: "test"
+  subset_size: 1000
+  train_val_split_ratio: 0.95
+
+training:
+  output_dir: "./output/radiology_caption"
+  num_epochs: 7
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  learning_rate: 3.0e-4
+  warmup_ratio: 0.05
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 1.0
+  fp16: true
+  logging_steps: 10
+  eval_strategy: "epoch"
+  save_strategy: "epoch"
+  save_total_limit: 2
+  seed: 42
+  report_to: "none"

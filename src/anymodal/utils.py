@@ -11,7 +11,7 @@ from typing import Any, Optional
 import torch
 
 from anymodal.config import LanguageModelConfig, ModelConfig, TrainingConfig
-from anymodal.encoders import VisionEncoder, load_vision_encoder
+from anymodal.encoders import load_vision_encoder
 from anymodal.model import MultiModalModel
 from anymodal.projectors import create_projector
 

@@ -10,8 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from dataclasses import asdict
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import torch
 import torch.nn as nn
@@ -104,7 +103,8 @@ class MultiModalModel(nn.Module):
         num_added = self.language_tokenizer.add_tokens(new_tokens, special_tokens=True)
         if num_added > 0:
             self.language_model.resize_token_embeddings(len(self.language_tokenizer))
-            logger.info(f"Added {num_added} special tokens, resized embeddings to {len(self.language_tokenizer)}")
+            new_size = len(self.language_tokenizer)
+            logger.info(f"Added {num_added} special tokens, resized embeddings to {new_size}")
 
     @property
     def device(self) -> torch.device:
@@ -133,7 +133,8 @@ class MultiModalModel(nn.Module):
         Returns:
             Tensor of shape (num_token_pieces, hidden_size).
         """
-        ids = self.language_tokenizer(token, return_tensors="pt", add_special_tokens=False)["input_ids"]
+        encoding = self.language_tokenizer(token, return_tensors="pt", add_special_tokens=False)
+        ids = encoding["input_ids"]
         return self._embed_tokens(ids.to(self.device)).squeeze(0)
 
     def _get_prompt_embedding(self) -> torch.Tensor:
@@ -233,7 +234,9 @@ class MultiModalModel(nn.Module):
             max_len = max(max_len, emb.shape[0])
 
         # Pad to max length
-        pad_token_id = self.language_tokenizer.pad_token_id or self.language_model.config.eos_token_id
+        pad_token_id = (
+            self.language_tokenizer.pad_token_id or self.language_model.config.eos_token_id
+        )
         pad_embedding = self._embed_tokens(
             torch.tensor([pad_token_id], device=self.device)
         ).squeeze(0)  # (hidden_size,)
@@ -286,7 +289,10 @@ class MultiModalModel(nn.Module):
             batched = {k: v.unsqueeze(0) if isinstance(v, torch.Tensor) else v
                        for k, v in modality_input.items()}
         else:
-            batched = modality_input.unsqueeze(0) if isinstance(modality_input, torch.Tensor) else modality_input
+            if isinstance(modality_input, torch.Tensor):
+                batched = modality_input.unsqueeze(0)
+            else:
+                batched = modality_input
 
         projected = self._encode_input(batched)  # (1, seq, hidden)
         emb, _ = self._build_sequence(projected[0], text_ids=None)
@@ -363,13 +369,15 @@ class MultiModalModel(nn.Module):
         projector_path = os.path.join(model_dir, "projector.pt")
         if not os.path.exists(projector_path):
             raise FileNotFoundError(f"Projector not found at {projector_path}")
-        self.projector.load_state_dict(torch.load(projector_path, map_location="cpu", weights_only=True))
+        state = torch.load(projector_path, map_location="cpu", weights_only=True)
+        self.projector.load_state_dict(state)
         logger.info("Loaded projector weights")
 
         # Load encoder if saved
         encoder_path = os.path.join(model_dir, "encoder.pt")
         if os.path.exists(encoder_path):
-            self.encoder.load_state_dict(torch.load(encoder_path, map_location="cpu", weights_only=True))
+            state = torch.load(encoder_path, map_location="cpu", weights_only=True)
+            self.encoder.load_state_dict(state)
             logger.info("Loaded encoder weights")
 
         # Load language model / PEFT adapters

@@ -8,7 +8,6 @@ from anymodal.encoders.base import BaseEncoder
 from anymodal.model import MultiModalModel
 from anymodal.projectors import MLPProjector
 
-
 # ---------------------------------------------------------------------------
 # Minimal stub components for testing (no HuggingFace downloads needed)
 # ---------------------------------------------------------------------------
@@ -69,7 +68,10 @@ class StubLM(nn.Module):
 
         return type("Output", (), {"logits": logits, "loss": loss})()
 
-    def generate(self, inputs_embeds=None, attention_mask=None, max_new_tokens=10, eos_token_id=None, **kwargs):
+    def generate(
+        self, inputs_embeds=None, attention_mask=None,
+        max_new_tokens=10, eos_token_id=None, **kwargs,
+    ):
         # Return dummy token ids
         return torch.tensor([[1, 5, 3, 2]])
 

@@ -12,7 +12,6 @@ from anymodal.projectors import (
     create_projector,
 )
 
-
 BATCH = 2
 INPUT_DIM = 768
 OUTPUT_DIM = 2048
@@ -41,7 +40,9 @@ class TestMLPProjector:
         assert out.shape == (BATCH, SEQ_LEN, OUTPUT_DIM)
 
     def test_custom_layers(self):
-        proj = MLPProjector(INPUT_DIM, OUTPUT_DIM, hidden_dim=1024, num_layers=3, use_layer_norm=True)
+        proj = MLPProjector(
+            INPUT_DIM, OUTPUT_DIM, hidden_dim=1024, num_layers=3, use_layer_norm=True
+        )
         x = torch.randn(BATCH, SEQ_LEN, INPUT_DIM)
         out = proj(x)
         assert out.shape == (BATCH, SEQ_LEN, OUTPUT_DIM)
@@ -55,20 +56,26 @@ class TestMLPProjector:
 
 class TestQFormerProjector:
     def test_resamples_to_num_queries(self):
-        proj = QFormerProjector(INPUT_DIM, OUTPUT_DIM, num_queries=32, num_layers=2, num_heads=4, head_dim=32)
+        proj = QFormerProjector(
+            INPUT_DIM, OUTPUT_DIM, num_queries=32, num_layers=2, num_heads=4, head_dim=32
+        )
         x = torch.randn(BATCH, SEQ_LEN, INPUT_DIM)
         out = proj(x)
         assert out.shape == (BATCH, 32, OUTPUT_DIM)
 
     def test_different_num_queries(self):
         for nq in [8, 16, 64]:
-            proj = QFormerProjector(INPUT_DIM, OUTPUT_DIM, num_queries=nq, num_layers=1, num_heads=4, head_dim=32)
+            proj = QFormerProjector(
+                INPUT_DIM, OUTPUT_DIM, num_queries=nq, num_layers=1, num_heads=4, head_dim=32
+            )
             x = torch.randn(1, SEQ_LEN, INPUT_DIM)
             out = proj(x)
             assert out.shape == (1, nq, OUTPUT_DIM)
 
     def test_variable_input_length(self):
-        proj = QFormerProjector(INPUT_DIM, OUTPUT_DIM, num_queries=16, num_layers=1, num_heads=4, head_dim=32)
+        proj = QFormerProjector(
+            INPUT_DIM, OUTPUT_DIM, num_queries=16, num_layers=1, num_heads=4, head_dim=32
+        )
         for seq in [50, 100, 300]:
             x = torch.randn(1, seq, INPUT_DIM)
             out = proj(x)
@@ -77,14 +84,19 @@ class TestQFormerProjector:
 
 class TestPerceiverProjector:
     def test_resamples_to_num_latents(self):
-        proj = PerceiverProjector(INPUT_DIM, OUTPUT_DIM, num_latents=64, num_layers=2, num_heads=4, head_dim=32)
+        proj = PerceiverProjector(
+            INPUT_DIM, OUTPUT_DIM, num_latents=64, num_layers=2, num_heads=4, head_dim=32
+        )
         x = torch.randn(BATCH, SEQ_LEN, INPUT_DIM)
         out = proj(x)
         assert out.shape == (BATCH, 64, OUTPUT_DIM)
 
     def test_different_num_latents(self):
         for nl in [8, 32, 128]:
-            proj = PerceiverProjector(INPUT_DIM, OUTPUT_DIM, num_latents=nl, num_layers=1, num_heads=4, head_dim=32)
+            proj = PerceiverProjector(
+                INPUT_DIM, OUTPUT_DIM, num_latents=nl,
+                num_layers=1, num_heads=4, head_dim=32,
+            )
             x = torch.randn(1, SEQ_LEN, INPUT_DIM)
             out = proj(x)
             assert out.shape == (1, nl, OUTPUT_DIM)
